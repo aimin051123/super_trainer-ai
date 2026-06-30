@@ -30,8 +30,6 @@ def harvest_file(uploaded_file, course_id=None):
     text = parse_file(uploaded_file)
     if not text:
         return f"❌ 无法解析文件：{uploaded_file.name}"
-    if text.startswith("[IMAGE:"):
-        return f"⚠️ 检测到图片文件（{text[7:-1]}）。当前版本仅支持电子文档（PDF/PPTX/DOCX/TXT/MD）。图片识别功能计划在后续版本支持。"
     subject = classify_subject(text)
     existing_courses = {c[1] for c in course_list()}
     if subject not in existing_courses and course_id:
