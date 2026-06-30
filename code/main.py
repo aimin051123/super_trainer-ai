@@ -364,8 +364,23 @@ if st.session_state.page == "规划":
                     ] if (wr2 or kp_data) else []
                     for i in range(10): st.session_state.pop(f"task_{i}", None)
         if st.session_state.plan:
-            # 本周视图
+            # 日期选择器
             today = datetime.now().date()
+            dates_in_plan = []
+            for s, d in st.session_state.exam_dates.items():
+                days = (d - today).days
+                if days > 0:
+                    for i in range(days):
+                        dt = today + timedelta(days=i)
+                        if dt not in dates_in_plan:
+                            dates_in_plan.append(dt)
+            if not dates_in_plan:
+                dates_in_plan = [today + timedelta(days=i) for i in range(30)]
+            dates_in_plan.sort()
+            date_labels = ["📋 完整计划"] + [d.strftime("%m/%d (%a)") for d in dates_in_plan]
+            selected_date = st.selectbox("查看日期", date_labels, key="plan_date")
+
+            # 本周视图
             ws = today - timedelta(days=today.weekday())
             st.subheader(f"📋 本周计划（{ws.strftime('%m/%d')} - {(ws+timedelta(days=6)).strftime('%m/%d')}）")
             wc = st.columns(7)
@@ -375,5 +390,10 @@ if st.session_state.page == "规划":
                 wc[i].caption(f"{wd}\n{day.strftime('%m/%d')} {icon}")
 
             st.divider()
-            st.markdown(st.session_state.plan)
-            st.download_button("📥 下载计划", st.session_state.plan, f"计划_{ed}.md", "text/markdown")
+            if selected_date == "📋 完整计划":
+                st.markdown(st.session_state.plan)
+            else:
+                st.info(f"📅 {selected_date} — 滚动查看当天内容")
+                st.markdown(st.session_state.plan)
+
+            st.download_button("📥 下载计划", st.session_state.plan, f"复习计划_{datetime.now().strftime('%Y%m%d')}.md", "text/markdown")
